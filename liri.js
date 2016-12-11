@@ -46,7 +46,37 @@ if(argument === "movie-this"){
 	// outputText();
 }
 
+//Spotify logic
+if(argument === "spotify-this-song"){
+	var songTitle = process.argv[3];
+	spotify.search({ type: 'track', query: songTitle }, function(err, data){
 
+		if(process.argv[3]){
+			var data = data.tracks.items;
+			for (var i = 0; i < data.length; i++) {
+
+				console.log(data[i].name); //song track name
+				console.log(data[i].album.href); //url
+				console.log(data[i].album.name); //album name
+				console.log(data[i].preview_url); //preview link to song
+				
+				for (var j = 0; i < data[i].artists.length; j++) {
+					console.log(data[i].artists[j].name); //artisit's name
+				}
+			}
+		}else{
+			spotify.search({ type: 'track', query: "The Sign" }, function(err, data){
+				var data = data.tracks.items;
+				console.log(data[0].name); //song track name
+				console.log(data[0].album.href); //url
+				console.log(data[0].album.name); //album name
+				console.log(data[0].preview_url); //preview link to song
+				console.log(data[0].artists[0].name); //artisit's name
+			});
+		}
+	});
+	outputText();
+}
 
 function outputText(){
 	fs.appendFile('log.text', 'Argument: ' + argument + 'Movie or Song Title: ' + value + '. Movie or Song info: ' + dataText + '.');

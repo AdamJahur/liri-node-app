@@ -28,6 +28,26 @@ if(argument === "my-tweets"){
 	outputText();
 }
 
+//Omdb logic
+if(argument === "movie-this"){
+	console.log(process.argv);
+	var movieTitle = process.argv[3];
+	request("http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&r=json&tomatoes=true", function (error, response, body){
+
+		if(process.argv[3]){
+			console.log(body);
+
+		}else{
+			request("http://www.omdbapi.com/?t=mr+nobody+&y=&plot=short&r=json&tomatoes=true", function (error, response, body){
+				console.log(body);
+			})
+		}
+	})
+	// outputText();
+}
+
+
+
 function outputText(){
 	fs.appendFile('log.text', 'Argument: ' + argument + 'Movie or Song Title: ' + value + '. Movie or Song info: ' + dataText + '.');
 }

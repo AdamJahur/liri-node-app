@@ -78,6 +78,14 @@ if(argument === "spotify-this-song"){
 	outputText();
 }
 
+//Read Text File Logic
+if(argument === "do-what-it-says"){
+	fs.readFile('random.txt', "utf8", function(err, data){
+		console.log(data);
+	});
+	outputText();
+}
+
 function outputText(){
 	fs.appendFile('log.text', 'Argument: ' + argument + 'Movie or Song Title: ' + value + '. Movie or Song info: ' + dataText + '.');
 }

@@ -1,83 +1,154 @@
+//Liri takes the following arguments
+// * my-tweets
+// * spotify-this-song
+// * movie-this
+// * do-what-it-says
+
+//these add other programs to this one
 var dataKeys = require("./keys.js");
-var fs = require('fs');
+var fs = require('fs'); //file system
 var twitter = require('twitter');
 var spotify = require('spotify');
 var request = require('request');
-var inputOne = process.argv[2];
-var inputTwo = process.argv[3] || 'Mr.Nobody';
-var inputThree = process.argv[4] || 'The-Sign, Ace of Base';
 
 
-switch(process.argv[2]) {
-	case 'movie-this':
-	var queryUrl = "http://www.omdbapi.com/?t=" + inputTwo + "&y=&plot=short&tomatoes=true&r=json";
-	request(queryUrl, function(error, data, body){
+var writeToLog = function(data) {
+  fs.appendFile("log.txt", '\r\n\r\n');
 
-		body = JSON.parse(body)
-		console.log("Title: " + body.Title);
-		console.log("Release Year: " + body.Year);
-		console.log("Country: " + body.Country);
-		console.log("Language: " + body.Language);
-		console.log("Plot: " + body.Plot);
-		console.log("Actors: " + body.Actors);
-		console.log("IMDB Rating " + body.imdbRating);
-		console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
-		console.log("Rotten Tomatoes URL: " + body.tomatoURL);
+  fs.appendFile("log.txt", JSON.stringify(data), function(err) {
+    if (err) {
+      return console.log(err);
+    }
 
-	});
-	break;
-	case 'my-tweets':
-	var client = new twitter({
-		consumer_key: keys.twitterKeys.consumer_key,
-		consumer_secret: keys.twitterKeys.consumer_secret,
-		access_token_key: keys.twitterKeys.access_token_key,
-		access_token_secret: keys.twitterKeys.access_token_secret
-	});
-
-	var parameters = {screen_name: 'AdamNJahur'};
-
-	client.get('statuses/user_timeline', parameters, function(error, tweets, response){
-		if(!error && response.statusCode == 200) {
-			for(var i = 0; i < 3; i++){
-				console.log(tweets[i].text + " Created on:" + tweets[i].created_at);
-			}
-		} else {
-			console.log(error);
-		}
-	});
-	break;
-	case 'spotify-this-song':
-	spotify();
-	break;
-	case 'do-what-it-says':
-	fs.readFile('random.txt', 'utf8', function(error, data){
-		if(error) {
-			console.log(error);
-		} else {
-			var dataArr = data.split(",");
-			console.log(dataArr);
-		}
-	});
-	break;
-	function spotify () {
-		spotify.search({type: 'track', query: inputThree}, function(err, data) {
-			if(err) {
-				console.log('Unecpected Error' + err);
-			}
-			var songs = data.tracks.items;
-			for(var i = 0; i < 1; i++) {
-				console.log("Album:" + songs[i].album.name);
-				console.log("Artist:" + songs[i].artists[0].name);
-				console.log("Preview Link:" + songs[i].preview_url);
-				console.log("Song:" + songs[i].name);
-			}
-		});
-	}
+    console.log("log.txt was updated!");
+  });
 }
 
+//Creates a function for finding artist name from spotify
+var getArtistNames = function(artist) {
+  return artist.name;
+};
+
+//Function for finding songs on Spotify
+var getMeSpotify = function(songName) {
+  //If it doesn't find a song, find Blink 182's What's my age again
+  if (songName === undefined) {
+    songName = 'The Sign';
+  };
+
+  spotify.search({ type: 'track', query: songName }, function(err, data) {
+    if (err) {
+      console.log('Error occurred: ' + err);
+      return;
+    }
+
+    var songs = data.tracks.items;
+    var data = []; //empty array to hold data
+
+    for (var i = 0; i < songs.length; i++) {
+      data.push({
+        'artist(s)': songs[i].artists.map(getArtistNames),
+        'song name: ': songs[i].name,
+        'preview song: ': songs[i].preview_url,
+        'album: ': songs[i].album.name,
+      });
+    }
+    console.log(data);
+    writeToLog(data);
+  });
+};
 
 
+var getTweets = function() {
+  var client = new twitter(dataKeys.twitterKeys);
 
+  var params = { screen_name: 'AdamNJahur', count: 10 };
 
+  client.get('statuses/user_timeline', params, function(error, tweets, response) {
 
+    if (!error) {
+      var data = []; //empty array to hold data
+      for (var i = 0; i < tweets.length; i++) {
+        data.push({
+            'created at: ' : tweets[i].created_at,
+            'Tweets: ' : tweets[i].text,
+        });
+      }
+      console.log(data);
+      writeToLog(data);
+    }
+  });
+};
 
+var getMeMovie = function(movieName) {
+
+  if (movieName === undefined) {
+    movieName = 'Mr Nobody';
+  }
+
+  var urlHit = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=full&tomatoes=true&r=json";
+
+  request(urlHit, function(error, response, body) {
+    if (!error && response.statusCode == 200) {
+      var data = [];
+      var jsonData = JSON.parse(body);
+
+      data.push({
+      'Title: ' : jsonData.Title,
+      'Year: ' : jsonData.Year,
+      'Rated: ' : jsonData.Rated,
+      'IMDB Rating: ' : jsonData.imdbRating,
+      'Country: ' : jsonData.Country,
+      'Language: ' : jsonData.Language,
+      'Plot: ' : jsonData.Plot,
+      'Actors: ' : jsonData.Actors,
+      'Rotten Tomatoes Rating: ' : jsonData.tomatoRating,
+      'Rotton Tomatoes URL: ' : jsonData.tomatoURL,
+  });
+      console.log(data);
+      writeToLog(data);
+}
+  });
+
+}
+
+var doWhatItSays = function() {
+  fs.readFile("random.txt", "utf8", function(error, data) {
+    console.log(data);
+    writeToLog(data);
+    var dataArr = data.split(',')
+
+    if (dataArr.length == 2) {
+      pick(dataArr[0], dataArr[1]);
+    } else if (dataArr.length == 1) {
+      pick(dataArr[0]);
+    }
+
+  });
+}
+
+var pick = function(caseData, functionData) {
+  switch (caseData) {
+    case 'my-tweets':
+      getTweets();
+      break;
+    case 'spotify-this-song':
+      getMeSpotify(functionData);
+      break;
+    case 'movie-this':
+      getMeMovie(functionData);
+      break;
+    case 'do-what-it-says':
+      doWhatItSays();
+      break;
+    default:
+      console.log('LIRI doesn\'t know that');
+  }
+}
+
+//run this on load of js file
+var runThis = function(argOne, argTwo) {
+  pick(argOne, argTwo);
+};
+
+runThis(process.argv[2], process.argv[3]);

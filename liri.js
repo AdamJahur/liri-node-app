@@ -62,7 +62,7 @@ switch(process.argv[2]) {
 }
 
 function spotify () {
-	spotify.search({tyoe: 'track', query: inputThree}, function(err, data) {
+	Spotify.search({type: 'track', query: inputThree}, function(err, data) {
 		if(err) {
 			console.log('Unecpected Error' + err);
 		}

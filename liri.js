@@ -59,22 +59,23 @@ switch(process.argv[2]) {
 		}
 	});
 	break;
+	function spotify () {
+		spotify.search({type: 'track', query: inputThree}, function(err, data) {
+			if(err) {
+				console.log('Unecpected Error' + err);
+			}
+			var songs = data.tracks.items;
+			for(var i = 0; i < 1; i++) {
+				console.log("Album:" + songs[i].album.name);
+				console.log("Artist:" + songs[i].artists[0].name);
+				console.log("Preview Link:" + songs[i].preview_url);
+				console.log("Song:" + songs[i].name);
+			}
+		});
+	}
 }
 
-function spotify () {
-	Spotify.search({type: 'track', query: inputThree}, function(err, data) {
-		if(err) {
-			console.log('Unecpected Error' + err);
-		}
-		var songs = data.tracks.items;
-		for(var i = 0; i < 1; i++) {
-			console.log("Album:" + songs[i].album.name);
-			console.log("Artist:" + songs[i].artists[0].name);
-			console.log("Preview Link:" + songs[i].preview_url);
-			console.log("Song:" + songs[i].name);
-		}
-	});
-}
+
 
 
 

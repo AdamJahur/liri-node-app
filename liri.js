@@ -1,91 +1,82 @@
-console.log("LIRI: What can I do for you?");
-// var request = require('request');
+var dataKeys = require("./keys.js");
 var fs = require('fs');
+var twitter = require('twitter');
 var spotify = require('spotify');
-var Twitter = require('twitter');
-var keys = require('./keys.js');
-var twit = new Twitter(keys);
-var argument = process.argv[2];
-var value = process.argv[3];
-var dataText = process.argv[4];
+var request = require('request');
+var inputOne = process.argv[2];
+var inputTwo = process.argv[3] || 'Mr.Nobody';
+var inputThree = process.argv[4] || 'The-Sign, Ace of Base';
 
-//Twitter Parameters
-var params = {
-	"screen_name": "AdamNJahur",
-	"count": 20
-}
 
-//Twitter Logic
-if(argument === "my-tweets"){
-	twit.get('statueses/user_timeline', params, goData);
-	function goData(error, data, response){
-		var tweets = data;
-		for (var i = 0; i < tweets.length; i++) {
-			console.log(tweets[i].text);
-			console.log(tweets[i].created_at);
-		}
-	};
-	outputText();
-}
+switch(process.argv[2]) {
+	case 'movie-this':
+	var queryUrl = "http://www.omdbapi.com/?t=" + inputTwo + "&y=&plot=short&tomatoes=true&r=json";
+	request(queryUrl, function(error, data, body){
 
-//Omdb logic
-if(argument === "movie-this"){
-	console.log(process.argv);
-	var movieTitle = process.argv[3];
-	request("http://www.omdbapi.com/?t=" + movieTitle + "&y=&plot=short&r=json&tomatoes=true", function (error, response, body){
+		body = JSON.parse(body)
+		console.log("Title: " + body.Title);
+		console.log("Release Year: " + body.Year);
+		console.log("Country: " + body.Country);
+		console.log("Language: " + body.Language);
+		console.log("Plot: " + body.Plot);
+		console.log("Actors: " + body.Actors);
+		console.log("IMDB Rating " + body.imdbRating);
+		console.log("Rotten Tomatoes Rating: " + body.tomatoRating);
+		console.log("Rotten Tomatoes URL: " + body.tomatoURL);
 
-		if(process.argv[3]){
-			console.log(body);
+	});
+	break;
+	case 'my-tweets':
+	var client = new twitter({
+		consumer_key: keys.twitterKeys.consumer_key,
+		consumer_secret: keys.twitterKeys.consumer_secret,
+		access_token_key: keys.twitterKeys.access_token_key,
+		access_token_secret: keys.twitterKeys.access_token_secret
+	});
 
-		}else{
-			request("http://www.omdbapi.com/?t=mr+nobody+&y=&plot=short&r=json&tomatoes=true", function (error, response, body){
-				console.log(body);
-			})
-		}
-	})
-	// outputText();
-}
+	var parameters = {screen_name: 'AdamNJahur'};
 
-//Spotify logic
-if(argument === "spotify-this-song"){
-	var songTitle = process.argv[3];
-	spotify.search({ type: 'track', query: songTitle }, function(err, data){
-
-		if(process.argv[3]){
-			var data = data.tracks.items;
-			for (var i = 0; i < data.length; i++) {
-
-				console.log(data[i].name); //song track name
-				console.log(data[i].album.href); //url
-				console.log(data[i].album.name); //album name
-				console.log(data[i].preview_url); //preview link to song
-				
-				for (var j = 0; i < data[i].artists.length; j++) {
-					console.log(data[i].artists[j].name); //artisit's name
-				}
+	client.get('statuses/user_timeline', parameters, function(error, tweets, response){
+		if(!error && response.statusCode == 200) {
+			for(var i = 0; i < 3; i++){
+				console.log(tweets[i].text + " Created on:" + tweets[i].created_at);
 			}
-		}else{
-			spotify.search({ type: 'track', query: "The Sign" }, function(err, data){
-				var data = data.tracks.items;
-				console.log(data[0].name); //song track name
-				console.log(data[0].album.href); //url
-				console.log(data[0].album.name); //album name
-				console.log(data[0].preview_url); //preview link to song
-				console.log(data[0].artists[0].name); //artisit's name
-			});
+		} else {
+			console.log(error);
 		}
 	});
-	outputText();
-}
-
-//Read Text File Logic
-if(argument === "do-what-it-says"){
-	fs.readFile('random.txt', "utf8", function(err, data){
-		console.log(data);
+	break;
+	case 'spotify-this-song':
+	spotify();
+	break;
+	case 'do-what-it-says':
+	fs.readFile('random.txt', 'utf8', function(error, data){
+		if(error) {
+			console.log(error);
+		} else {
+			var dataArr = data.split(",");
+			console.log(dataArr);
+		}
 	});
-	outputText();
+	break;
 }
 
-function outputText(){
-	fs.appendFile('log.text', 'Argument: ' + argument + 'Movie or Song Title: ' + value + '. Movie or Song info: ' + dataText + '.');
+function spotify () {
+	spotify.search({tyoe: 'track', query: inputThree}, function(err, data) {
+		if(err) {
+			console.log('Unecpected Error' + err);
+		}
+		var songs = data.tracks.items;
+		for(var i = 0; i < 1; i++) {
+			console.log("Album:" + songs[i].album.name);
+			console.log("Artist:" + songs[i].artists[0].name);
+			console.log("Preview Link:" + songs[i].preview_url);
+			console.log("Song:" + songs[i].name);
+		}
+	});
 }
+
+
+
+
+

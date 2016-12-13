@@ -1,5 +1,5 @@
 console.log("LIRI: What can I do for you?");
-var request = require('request');
+// var request = require('request');
 var fs = require('fs');
 var spotify = require('spotify');
 var Twitter = require('twitter');

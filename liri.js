@@ -62,7 +62,7 @@ var getMeSpotify = function(songName) {
 var getTweets = function() {
   var client = new twitter(dataKeys.twitterKeys);
 
-  var params = { screen_name: 'AdamNJahur', count: 10 };
+  var params = { screen_name: 'AdamNJahur', count: 20 };
 
   client.get('statuses/user_timeline', params, function(error, tweets, response) {
 
@@ -86,7 +86,7 @@ var getMeMovie = function(movieName) {
     movieName = 'Mr Nobody';
   }
 
-  var urlHit = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=full&tomatoes=true&r=json";
+  var urlHit = "http://www.omdbapi.com/?t=" + movieName + "&y=&plot=short&tomatoes=true&r=json";
 
   request(urlHit, function(error, response, body) {
     if (!error && response.statusCode == 200) {
@@ -152,3 +152,4 @@ var runThis = function(argOne, argTwo) {
 };
 
 runThis(process.argv[2], process.argv[3]);
+

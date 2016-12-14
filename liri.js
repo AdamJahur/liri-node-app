@@ -31,7 +31,6 @@ var getArtistNames = function(artist) {
 
 //Function for finding songs on Spotify
 var getMeSpotify = function(songName) {
-  //If it doesn't find a song, find Blink 182's What's my age again
   if (songName === undefined) {
     songName = 'The Sign';
   };
